@@ -11,6 +11,7 @@ import numpy as np
 from setuptools import setup
 from setuptools.extension import Extension
 from setuptools.command.sdist import sdist as _sdist
+import platform
 
 cython_locs = [
     ('bandmat', 'full'),
@@ -29,6 +30,11 @@ requires = [ line.rstrip('\n') for line in open('requirements.txt') ]
 # see "A note on setup.py" in README.rst for an explanation of the dev file
 dev_mode = os.path.exists('dev')
 
+if platform.system() == "windows":
+    extra_compile_args = []
+else:
+    extra_compile_args = ['-Wno-unused-but-set-variable', '-03']
+
 if dev_mode:
     from Cython.Distutils import build_ext
     from Cython.Build import cythonize
@@ -46,7 +52,7 @@ if dev_mode:
     cmdclass = {'build_ext': build_ext, 'sdist': sdist}
     ext_modules = [
         Extension('.'.join(loc), [os.path.join(*loc)+'.pyx'],
-                  extra_compile_args=['-O3'],
+                  # extra_compile_args=extra_compile_args,
                   include_dirs=[np.get_include()])
         for loc in cython_locs
     ]
@@ -54,7 +60,7 @@ else:
     cmdclass = {}
     ext_modules = [
         Extension('.'.join(loc), [os.path.join(*loc)+'.c'],
-                  extra_compile_args=['-O3'],
+                  # extra_compile_args=['-O3'],
                   include_dirs=[np.get_include()])
         for loc in cython_locs
     ]
